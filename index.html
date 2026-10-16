@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Web Port</title>
+    <style>
+      :root { --bg: #f6f6f4; --fg: #1d1d1b; --muted: #66665f; --card: #fff; --line: #ddddd6; --accent: #2a6bd1; --accent-fg: #fff; --bad: #b3261e; --good: #1f7a3a; --shade: rgb(0 0 0 / 0.45); }
+      @media (prefers-color-scheme: dark) {
+        :root { --bg: #151514; --fg: #ecece8; --muted: #a2a29a; --card: #1f1f1d; --line: #34342f; --accent: #6c9ef0; --accent-fg: #0b0b0a; --bad: #f2867d; --good: #7fcf95; --shade: rgb(0 0 0 / 0.6); }
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; }
+      main { max-width: 40rem; margin: 0 auto; padding: 32px 16px 48px; }
+      h1 { font-size: 1.5rem; margin: 0 0 4px; }
+      p { margin: 0 0 12px; }
+      .muted { color: var(--muted); font-size: 0.9rem; }
+      a { color: var(--accent); }
+      code { font-size: 0.85em; overflow-wrap: anywhere; }
+      button, .button { font: inherit; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--fg); padding: 8px 14px; cursor: pointer; text-decoration: none; display: inline-block; text-align: center; }
+      .primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); font-weight: 600; }
+      .link { border: 0; background: none; padding: 0; color: var(--accent); text-decoration: underline; font-size: 0.9rem; }
+      .error { color: var(--bad); }
+      .good { color: var(--good); }
+      [hidden] { display: none !important; }
+      details summary { cursor: pointer; color: var(--muted); }
+
+      /* The games: one tile each, gray until the game is on this device. */
+      #games { display: grid; grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); gap: 24px 16px; margin: 28px 0 20px; padding: 0; list-style: none; }
+      .tile { position: relative; }
+      .hit { display: block; color: inherit; text-decoration: none; text-align: center; border-radius: 16px; outline-offset: 4px; }
+      .icon { position: relative; aspect-ratio: 1; border-radius: 22%; overflow: hidden; background: var(--line); box-shadow: 0 1px 3px rgb(0 0 0 / 0.2); }
+      .icon img { position: relative; width: 100%; height: 100%; object-fit: cover; display: block; transition: filter 0.3s, opacity 0.3s; }
+      .icon .initials { position: absolute; inset: 0; display: grid; place-items: center; font-size: 2.2rem; font-weight: 700; color: var(--muted); }
+      .tile:not([data-state="ready"]) .icon img { filter: grayscale(1); opacity: 0.5; }
+      .tile[data-state="working"] .icon img { opacity: 0.3; }
+      /* The PC game's own icon has its own shape and margin; the mobile icons are clipped to the tile's. */
+      .tile[data-pic="exe"] .icon { background: none; box-shadow: none; overflow: visible; }
+      .tile[data-pic="exe"] .icon img { object-fit: contain; transform: scale(1.12); }
+      .ring { position: absolute; inset: 22%; border-radius: 50%; display: none;
+        background: conic-gradient(var(--accent) calc(var(--p, 0) * 1turn), rgb(255 255 255 / 0.35) 0); }
+      .ring::after { content: ""; position: absolute; inset: 10px; border-radius: 50%; background: var(--card); opacity: 0.9; }
+      .tile[data-state="working"] .ring { display: block; }
+      .name { margin-top: 8px; font-weight: 600; font-size: 0.95rem; line-height: 1.25; }
+      .status { display: inline-block; margin-top: 4px; font-size: 0.8rem; padding: 1px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+      .tile[data-state="ready"] .status { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); font-weight: 600; }
+      .tile[data-state="pick"] .status { border-color: var(--accent); color: var(--accent); }
+      .more { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; padding: 0; border-radius: 50%; border: 0;
+        background: var(--shade); color: #fff; font-size: 1.1rem; line-height: 32px; }
+
+      #status { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 0 0 16px; }
+      #status progress { width: 100%; height: 8px; }
+      #drop { border: 2px dashed transparent; border-radius: 12px; padding: 4px 8px; text-align: center; }
+      body.over #drop { border-color: var(--accent); }
+
+      dialog { border: 1px solid var(--line); border-radius: 16px; background: var(--card); color: var(--fg); width: min(28rem, calc(100% - 32px)); padding: 20px; }
+      dialog::backdrop { background: rgb(0 0 0 / 0.4); }
+      dialog h2 { font-size: 1.15rem; margin: 0 0 2px; padding-right: 32px; outline: none; }
+      .actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+      .actions > * { flex: 1 1 auto; }
+      #sheet-source { overflow-wrap: anywhere; }
+      .close { position: absolute; top: 10px; right: 10px; border: 0; background: none; font-size: 1.3rem; padding: 4px 10px; }
+    </style>
+    <script type="module" crossorigin src="./assets/main-DRuzgefx.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/store-5nzIPZ4Q.js">
+  </head>
+  <body>
+    <main>
+      <h1>Web Port</h1>
+      <p class="muted">Web ports of PC games, run in your browser from your own copy. This site contains no game files: each game is
+        unpacked on this device from its original PC installer, and stays here.</p>
+
+      <ul id="games"></ul>
+
+      <div id="status" role="status" hidden>
+        <p style="margin: 0 0 6px"><strong id="work-title"></strong></p>
+        <progress id="bar" max="1"></progress>
+        <p class="muted" id="work-detail" style="margin: 4px 0 0">&nbsp;</p>
+        <p class="error" id="error-text" role="alert" style="margin: 0"></p>
+        <div class="actions" style="margin-bottom: 0"><button id="cancel">Cancel</button><button id="dismiss">OK</button></div>
+      </div>
+
+      <div id="drop">
+        <label class="link" for="file">Already have an installer? Choose the file</label>
+        <input id="file" type="file" accept=".exe,application/octet-stream,application/x-msdownload" hidden />
+        <span class="muted"> or drop it on this page.</span>
+      </div>
+
+      <p class="muted" id="ios-note" hidden>On iPhone and iPad, add this site to the Home Screen (Share → Add to Home Screen) and play from there, so Safari keeps the game data.</p>
+
+      <details>
+        <summary>About</summary>
+        <p class="muted">Get opens the game's original installer on archive.org; your browser downloads it, then you choose the downloaded file here.
+          The installer is read in your browser: the game is unpacked, its data decrypted and its images converted on this device,
+          then kept in this site's storage for the next visit. The installer itself is not kept. Until a game is on this device, its picture is
+          its mobile version's icon from an archive.org upload; after, it's the PC game's own icon. The PC versions' online activation is no longer in service,
+          so the games run as the full versions, as the mobile versions did. Not affiliated with the games' makers.</p>
+      </details>
+    </main>
+
+    <dialog id="sheet">
+      <button class="close" id="sheet-close" aria-label="Close">×</button>
+      <h2 id="sheet-title" tabindex="-1" autofocus></h2>
+      <p class="muted" id="sheet-version"></p>
+      <p id="sheet-text"></p>
+      <div class="actions" id="sheet-ready">
+        <a class="button primary" id="play" href="play.html">Play</a>
+      </div>
+      <div class="actions" id="sheet-get">
+        <a class="button primary" id="get" target="_blank" rel="noopener">Download from archive.org</a>
+        <button id="sheet-pick">Choose the downloaded file</button>
+      </div>
+      <div class="actions" id="sheet-saves">
+        <button id="export-saves">Export saves</button>
+        <label class="button" for="import-file">Import saves</label>
+        <input id="import-file" type="file" accept=".json,application/json" hidden />
+        <button id="remove">Remove game data…</button>
+      </div>
+      <p class="muted" id="saves-status"></p>
+      <p class="muted" id="sheet-source"></p>
+    </dialog>
+
+  </body>
+</html>
