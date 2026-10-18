@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#6d84a2" />
+    <link rel="icon" href="icons/feather.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/feather-180.png" />
+    <meta name="apple-mobile-web-app-title" content="Feather" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Feather</title>
+    <style>
+      /* Feather: a launcher in the visual language of iOS 6 (a UINavigationBar, linen, a SpringBoard dock,
+         glossy buttons, an action sheet and an alert view), drawn in CSS only. */
+      :root {
+        --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        /* Values read from iOS 6's artwork and UIKit (the ~/ios6UI project's notes), in points. */
+        --linen: #4b4f59; --text: #fff; --text-dim: #bfc4cd; --link: #9cc3ff;
+        /* The main button's blue: the navigation bar's hue (214°), deeper, so the two read as one family. */
+        --blue-top: #9cb8de; --blue-mid: #608bc3; --blue-low: #3b6bab; --blue-bottom: #325f9a; --blue-line: #233c5c;
+        --red-top: #ef7a7a; --red-mid: #db3b3b; --red-low: #c41d1d; --red-line: #7a0e0e;
+        --cell-line: rgb(0 0 0 / 0.18); --group-text: #4c566c; --cell-text: #000; --detail: #385487;
+        --dock-h: 104px;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; }
+      body { display: flex; flex-direction: column; min-height: 100dvh; overflow: hidden; color: var(--text); font: 15px/1.4 var(--font);
+        -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+        /* Linen: a fine weave over a flat dark gray, as iOS 6 had it. */
+        background-color: var(--linen);
+        background-image:
+          repeating-linear-gradient(0deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 3px),
+          repeating-linear-gradient(90deg, rgb(0 0 0 / 0.07) 0 1px, transparent 1px 2px),
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9 0.08' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.08 0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.12 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+      [hidden] { display: none !important; }
+      a { color: var(--link); }
+      button { font: inherit; color: inherit; cursor: pointer; }
+      label.sheetbutton { cursor: pointer; }
+      :focus:not(:focus-visible), [tabindex="-1"]:focus { outline: none; }
+
+      /* UINavigationBar: the blue-gray gradient, a light top line, a dark bottom line and the etched title. */
+      .navbar { position: relative; z-index: 2; flex: none; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px;
+        height: calc(44px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) max(6px, env(safe-area-inset-right)) 0 max(6px, env(safe-area-inset-left));
+        background: linear-gradient(#cfd9e6, #beccdd 2px, #aabacf 25%, #8da0bb 50%, #6e86a6 74%, #587397) bottom / 100% 44px no-repeat, #cfd9e6;
+        border-bottom: 1px solid #3f5c80; box-shadow: inset 0 1px 0 #eff2f7, 0 1px 1px rgb(0 0 0 / 0.2), 0 2px 3px rgb(0 0 0 / 0.1); }
+      .navbar h1 { margin: 0; font: bold 20px/1 var(--font); text-shadow: 0 -1px 0 rgb(0 0 0 / 0.5); letter-spacing: 0.01em; }
+      .navbar > :first-child { justify-self: start; }
+      .navbar > :last-child { justify-self: end; }
+      /* A bordered bar button: darker than the bar, a dark edge, a lit lower edge. */
+      .barbutton { min-width: 34px; height: 30px; padding: 0 10px; border-radius: 5px; border: 1px solid #3e4e64; border-top-color: #343a42; border-bottom-color: #2f4769;
+        background: linear-gradient(#97a9c1, #617a9d 50%, #41618d);
+        box-shadow: inset 0 1px 0 #99aac2, 0 1px 0 rgb(255 255 255 / 0.3);
+        font: bold 12px/28px var(--font); color: #fff; text-shadow: 0 -1px 0 rgb(0 0 0 / 0.35); }
+      .barbutton:active { background: linear-gradient(#8b97af, #273e6b); border-color: #1c2c4f; border-top-color: #30343c; box-shadow: 0 1px 0 rgb(255 255 255 / 0.3); }
+      #add { padding: 0 9px; }
+      #add svg { display: block; filter: drop-shadow(0 -1px 0 rgb(0 0 0 / 0.35)); }
+      .barbutton.done { background: linear-gradient(var(--blue-top), var(--blue-mid) 50%, var(--blue-bottom)); border-color: var(--blue-line); border-top-color: #303b4f; border-bottom-color: #2a4a75; box-shadow: inset 0 1px 0 #a9c2e3, 0 1px 0 rgb(255 255 255 / 0.3); }
+
+      .navbar, #stage, .dock { position: relative; z-index: 1; }
+      .navbar { z-index: 2; }
+
+      /* The stage: the selected game. */
+      #stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; gap: 40px; padding: 24px max(16px, env(safe-area-inset-right)) 12px max(16px, env(safe-area-inset-left)); }
+      .art { position: relative; flex: none; width: 168px; }
+      .art-icon { position: relative; width: 168px; aspect-ratio: 1; border-radius: 16.7%; overflow: hidden; display: grid; place-items: center;
+        background: linear-gradient(#5c6270, #3a3f49); box-shadow: 0 4px 10px rgb(0 0 0 / 0.6), 0 1px 2px rgb(0 0 0 / 0.5); }
+      .art-icon img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      #stage-initials { font: bold 40px var(--font); color: rgb(255 255 255 / 0.6); }
+      .art[data-pic="exe"] .art-icon { background: none; box-shadow: none; overflow: visible; border-radius: 0; }
+      .art[data-pic="exe"] .art-icon img { object-fit: contain; filter: drop-shadow(0 4px 8px rgb(0 0 0 / 0.6)); }
+      .reflection { display: block; width: 168px; aspect-ratio: 1; margin-top: 6px; border-radius: 16.7%; transform: scaleY(-1); opacity: 0.35;
+        -webkit-mask-image: linear-gradient(to top, #000, transparent 45%); mask-image: linear-gradient(to top, #000, transparent 45%); pointer-events: none; }
+      .art[data-pic="exe"] .reflection { border-radius: 0; object-fit: contain; margin-top: -10%; }
+      .art[data-pic="none"] .reflection { display: none; }
+      #stage:not([data-state="ready"]) .art img { filter: grayscale(1) brightness(0.9); }
+      #stage[data-state="working"] .art img { filter: grayscale(1) brightness(0.5); }
+      .art { margin-bottom: -114px; } /* the reflection doesn't take room */
+      .info { max-width: 26rem; min-width: 0; }
+      .info h2 { margin: 0; font: bold 28px/1.15 var(--font); text-shadow: 0 1px 3px rgb(0 0 0 / 0.7); }
+      .meta { margin: 6px 0 16px; color: var(--text-dim); font-size: 14px; text-shadow: 0 1px 1px rgb(0 0 0 / 0.6); }
+      .text { margin: 12px 0 0; color: var(--text-dim); font-size: 14px; text-shadow: 0 1px 1px rgb(0 0 0 / 0.6); }
+      .text.small { font-size: 13px; }
+      .buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+
+      /* Glossy buttons, as in iOS 6's App Store: a bright upper half, a deep lower half, a dark edge. */
+      .glossy { display: inline-flex; align-items: center; justify-content: center; min-width: 132px; height: 44px; padding: 0 22px;
+        border-radius: 8px; border: 1px solid var(--blue-line); text-decoration: none;
+        background: linear-gradient(var(--blue-top), var(--blue-mid) 50%, var(--blue-low) 50%, var(--blue-bottom));
+        box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 1px 2px rgb(0 0 0 / 0.5);
+        font: bold 17px var(--font); color: #fff; text-shadow: 0 -1px 0 rgb(0 0 0 / 0.4); text-transform: uppercase; letter-spacing: 0.04em; }
+      .glossy:active { filter: brightness(0.85); }
+      .glossy.dark { min-width: 0; border-color: rgb(0 0 0 / 0.75); text-transform: none; letter-spacing: 0; font-size: 15px;
+        background: linear-gradient(rgb(255 255 255 / 0.28), rgb(255 255 255 / 0.12) 50%, rgb(255 255 255 / 0.04) 50%, rgb(255 255 255 / 0.08));
+        box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 1px 0 rgb(255 255 255 / 0.12); }
+      .glossy.small { height: 30px; padding: 0 12px; font-size: 13px; border-radius: 6px; }
+      #stage[data-state="working"] .buttons, #stage[data-state="working"] #alt { display: none; }
+      #stage[data-state="pick"] #action { --blue-top: #8ad36a; --blue-mid: #5db83a; --blue-low: #3f9e20; --blue-bottom: #36921a; --blue-line: #225f0e; }
+      #action[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
+
+      /* UIProgressView: a sunken track and a glossy blue bar. */
+      .progress { margin-top: 16px; display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; }
+      .progress .work { grid-column: 1 / -1; margin: 0; font-size: 14px; text-shadow: 0 1px 1px rgb(0 0 0 / 0.6); }
+      .progress .detail { color: var(--text-dim); }
+      progress { -webkit-appearance: none; appearance: none; width: 100%; height: 9px; border: 1px solid #888; border-bottom-color: #8d8d8d; border-radius: 4.5px; overflow: hidden;
+        background: linear-gradient(#9d9d9d, #d0d0d0 50%, #fff 50%, #e1e1e1); color: #2472d2; }
+      progress::-webkit-progress-bar { background: transparent; }
+      progress::-webkit-progress-value { border-radius: 4px; background: linear-gradient(#c3d9f7, #76a4e4 50%, #2472d2 50%, #398ef4); box-shadow: inset 0 1px 0 #5f6bb7, inset 0 -1px 0 #2668a6; }
+      progress::-moz-progress-bar { border-radius: 4px; background: linear-gradient(#c3d9f7, #76a4e4 50%, #2472d2 50%, #398ef4); }
+      progress:indeterminate { background: repeating-linear-gradient(-45deg, #76a4e4 0 8px, #2472d2 8px 16px); background-size: 200% 100%; animation: barber 1s linear infinite; }
+      progress:indeterminate::-webkit-progress-bar { background: transparent; }
+      @keyframes barber { to { background-position: 22.6px 0; } }
+
+      /* The dock: SpringBoard's glass shelf, with the games standing on it. */
+      .dock { position: relative; z-index: 1; flex: none; height: calc(var(--dock-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); }
+      .dock::before { content: ""; position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 20px); width: min(100% - 8px, 560px); height: 52px;
+        transform: translateX(-50%) perspective(220px) rotateX(38deg); transform-origin: bottom;
+        background: linear-gradient(90deg, rgb(255 255 255 / 0.13), rgb(255 255 255 / 0.56) 50%, rgb(255 255 255 / 0.13));
+        border-top: 1px solid rgb(255 255 255 / 0.56); border-radius: 3px 3px 0 0; }
+      .dock::after { content: ""; position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 6px); width: min(100% - 8px, 560px); height: 10px; transform: translateX(-50%);
+        background: linear-gradient(90deg, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0.39) 50%, rgb(255 255 255 / 0.2)); border-radius: 0 0 2px 2px;
+        border-bottom: 4px solid rgb(255 255 255 / 0.3); box-shadow: 0 3px 6px rgb(0 0 0 / 0.4); }
+      #games { position: relative; z-index: 1; display: flex; justify-content: center; gap: clamp(8px, 4vw, 36px); margin: 0; padding: 0 8px; list-style: none; height: 100%; align-items: flex-end; }
+      .tile { width: 76px; }
+      .hit { position: relative; display: flex; flex-direction: column; align-items: center; width: 100%; padding: 0 0 22px; border: 0; background: none; outline-offset: 2px; }
+      .icon { position: relative; width: 60px; aspect-ratio: 1; border-radius: 16.7%; display: grid; place-items: center;
+        background: linear-gradient(#5c6270, #3a3f49); box-shadow: 0 2px 3px rgb(0 0 0 / 0.55);
+        -webkit-box-reflect: below 2px linear-gradient(transparent 62%, rgb(255 255 255 / 0.3)); transition: transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1); }
+      .icon img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+      .icon .initials { font: bold 15px var(--font); color: rgb(255 255 255 / 0.7); }
+      .tile[data-pic="exe"] .icon { background: none; box-shadow: none; border-radius: 0; }
+      .tile[data-pic="exe"] .icon img { object-fit: contain; transform: scale(1.12); filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.55)); }
+      .tile:not([data-state="ready"]) .icon img { filter: grayscale(1) brightness(0.85); }
+      .tile[data-state="working"] .icon img { filter: grayscale(1) brightness(0.45); }
+      .hit:active .icon { filter: brightness(0.6); }
+      .tile.selected .icon { transform: translateY(-4px); }
+      .tile.selected .hit::before { content: ""; position: absolute; width: 90px; height: 26px; margin-top: 44px; border-radius: 50%;
+        background: radial-gradient(rgb(255 255 255 / 0.7), transparent 70%); pointer-events: none; }
+      /* An app installing on SpringBoard: a pie in a ring over the darkened icon. */
+      .ring { position: absolute; inset: 26%; border-radius: 50%; display: none; border: 2px solid rgb(255 255 255 / 0.9);
+        background: conic-gradient(rgb(255 255 255 / 0.9) calc(var(--p, 0) * 1turn), transparent 0); background-clip: content-box; padding: 2px; }
+      .tile[data-state="working"] .ring { display: block; }
+      .name { margin-top: 6px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        font: bold 11px/1.2 var(--font); color: #fff; text-shadow: 0 1px 2px rgb(0 0 0 / 0.9); }
+      .tile:not(.selected) .name { color: rgb(255 255 255 / 0.8); }
+
+      /* Drag and drop: the page dims around a spotlight. */
+      #drop { position: fixed; inset: 0; z-index: 5; display: none; place-items: center; pointer-events: none;
+        background: radial-gradient(circle at 50% 45%, rgb(0 0 0 / 0.25), rgb(0 0 0 / 0.8) 70%); }
+      body.over #drop { display: grid; }
+      #drop p { font: bold 20px var(--font); text-shadow: 0 -1px 0 #000; }
+
+      /* Dialogs share UIAlertView's spotlight. */
+      dialog { padding: 0; border: 0; color: inherit; font: inherit; }
+      dialog::backdrop { background: rgb(0 0 0 / 0.5); }
+      .alertview::backdrop { background: radial-gradient(circle at 50% 45%, rgb(0 0 0 / 0.14) 67px, rgb(0 0 0 / 0.5) 215px); }
+
+      /* UIActionSheet: a dark glass panel from the bottom with large rounded buttons. */
+      .actionsheet { position: fixed; inset: auto 0 0 0; margin: 0 auto; width: min(100%, 480px); max-width: 100%;
+        padding: 14px 20px calc(18px + env(safe-area-inset-bottom));
+        background: linear-gradient(rgb(169 173 182 / 0.84), rgb(92 98 109 / 0.84) 33px) rgb(92 98 109 / 0.84);
+        border-top: 1px solid #3f4347; -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
+      .actionsheet[open] { animation: rise 0.25s ease-out; }
+      @keyframes rise { from { transform: translateY(100%); } }
+      .sheet-title { margin: 0; text-align: center; font: bold 15px var(--font); text-shadow: 0 -1px 0 #000; }
+      .sheet-note { margin: 4px 0 12px; text-align: center; font-size: 13px; color: var(--text-dim); text-shadow: 0 -1px 0 #000; }
+      .sheetbutton { display: block; width: 100%; height: 46px; margin: 8px 0 0; border-radius: 10px; border: 1px solid rgb(0 0 0 / 0.8); text-align: center;
+        background: linear-gradient(#fefefe, #e6e7e8 50%, #c2c3c5 50%, #e1e1e1); box-shadow: inset 0 1px 0 #fff, 0 1px 0 rgb(255 255 255 / 0.25);
+        font: bold 18px/44px var(--font); color: #202020 !important; text-shadow: 0 1px 0 #fff; }
+      .sheetbutton:active { background: linear-gradient(#7aaaf1, #4f8ae9 50%, #2f6edb 50%, #2462ce); color: #fff !important; text-shadow: 0 -1px 0 rgb(0 0 0 / 0.4); }
+      .sheetbutton.destructive { background: linear-gradient(#ef8c8c, #e64a4a 50%, #dc0101 50%, #e54646); border-color: rgb(0 0 0 / 0.8);
+        color: #fff !important; text-shadow: 0 -1px 0 rgb(0 0 0 / 0.4); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 1px 0 rgb(255 255 255 / 0.2); }
+      .sheetbutton.cancel { margin-top: 18px; background: linear-gradient(#686b70, #4a4f56 50%, #2b3038 50%, #373d45); color: #fff !important; text-shadow: 0 -1px 0 #000;
+        box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 1px 0 rgb(255 255 255 / 0.15); }
+
+      /* UIAlertView: dark blue glass, a white rim and a gloss arc over the top. */
+      .alertview { width: min(284px, calc(100% - 32px)); border-radius: 10px; padding: 16px 12px 12px; text-align: center; overflow: hidden;
+        background: radial-gradient(160% 30px at 50% 0, rgb(235 237 241 / 0.42), rgb(42 58 100 / 0.2) 98%, transparent 100%) no-repeat, rgb(0 18 68 / 0.8);
+        border: 1px solid #bec3cf; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.35), 0 4px 9px rgb(0 0 0 / 0.6); }
+      .alertview[open] { animation: pop 0.3s ease-out; }
+      @keyframes pop { 0% { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.06); opacity: 1; } 100% { transform: scale(1); } }
+      .alert-title { margin: 0 0 6px; font: bold 18px/1.25 var(--font); text-shadow: 0 -1px 0 #000; }
+      .alert-text { margin: 0 0 14px; font-size: 16px; text-shadow: 0 -1px 0 #000; }
+      .alertbutton { width: 100%; height: 43px; border-radius: 7px; border: 1px solid rgb(0 0 0 / 0.6);
+        background: linear-gradient(rgb(255 255 255 / 0.64), rgb(255 255 255 / 0.31) 50%, rgb(255 255 255 / 0.2) 50%, rgb(255 255 255 / 0.3));
+        box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 1px 0 rgb(255 255 255 / 0.15); font: bold 17px var(--font); color: #fff; text-shadow: 0 -1px 0 #000; }
+      .alertbutton:active { background: rgb(255 255 255 / 0.4); }
+
+      /* About: a modal page, a navigation bar over a grouped table on the pinstripe. */
+      .modal { width: min(100%, 520px); max-width: 100%; height: min(100dvh, 720px); max-height: 100dvh; overflow: hidden; display: none; flex-direction: column;
+        box-shadow: 0 10px 30px rgb(0 0 0 / 0.7); color: var(--cell-text); }
+      .modal[open] { display: flex; animation: rise 0.3s ease-out; }
+      @media (min-width: 560px) { .modal { border-radius: 6px; } }
+      .modal .navbar { color: #fff; }
+      .grouped { flex: 1; overflow: auto; padding: 0 9px calc(20px + env(safe-area-inset-bottom));
+        background: repeating-linear-gradient(90deg, rgb(85 85 127 / 0.024) 0 2.5px, transparent 2.5px 8px), linear-gradient(#d7dce5, #c8cdd6) fixed; }
+      .group-header { margin: 18px 10px 6px; font: bold 17px var(--font); color: var(--group-text); text-shadow: 0 1px 0 #fff; }
+      .group { margin: 0 -1px; background: #f7f7f7; border: 1px solid var(--cell-line); border-radius: 7.5px; overflow: hidden;
+        box-shadow: 0 1px 0 rgb(255 255 255 / 0.85), 0 2px 0 rgb(255 255 255 / 0.28); }
+      .group p { margin: 0; padding: 11px 10px; font-size: 15px; line-height: 1.4; }
+      .group p + p { border-top: 1px solid var(--cell-line); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.75); }
+      .group a { color: var(--detail); overflow-wrap: anywhere; }
+      .group-footer { margin: 12px 10px 0; text-align: center; font-size: 14px; color: var(--group-text); text-shadow: 0 1px 0 #fff; }
+      .group-footer + .group-footer { margin-top: 8px; }
+      .about-head { display: flex; flex-direction: column; align-items: center; padding: 22px 10px 2px; text-align: center; }
+      .about-head img { border-radius: 16.7%; box-shadow: 0 2px 4px rgb(0 0 0 / 0.45); }
+      .about-name { margin: 10px 0 0; font: bold 20px var(--font); color: var(--cell-text); text-shadow: 0 1px 0 #fff; }
+      .about-tag { margin: 2px 0 0; font-size: 14px; color: var(--group-text); text-shadow: 0 1px 0 #fff; }
+      /* A table row with a value and a disclosure chevron (UITableViewCellStyleValue1). */
+      .group .row { display: flex; align-items: center; gap: 10px; padding: 11px 10px; color: var(--cell-text); text-decoration: none; font: bold 15px var(--font); }
+      .group .row + .row { border-top: 1px solid var(--cell-line); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.75); }
+      .group .row:active { background: linear-gradient(#058cf5, #015fe6); color: #fff; }
+      .row .label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .row .value { color: var(--detail); font-weight: normal; white-space: nowrap; }
+      .row::after { content: ""; flex: none; width: 7px; height: 7px; margin: 0 3px 0 2px; border: solid #8c8c8c; border-width: 2.5px 2.5px 0 0; transform: rotate(45deg); }
+      .row:active .value { color: #fff; }
+      .row:active::after { border-color: #fff; }
+
+      /* Big screens: a bigger stage. */
+      @media (min-width: 1000px) and (min-height: 700px) {
+        .art, .art-icon, .reflection { width: 220px; }
+        .art { margin-bottom: -150px; }
+        .info h2 { font-size: 36px; }
+        .meta { font-size: 16px; }
+        .text { font-size: 15px; }
+        #stage { gap: 56px; }
+        :root { --dock-h: 116px; }
+        .icon { width: 68px; }
+        .tile { width: 84px; }
+      }
+      /* Phones upright: the stage stacks. */
+      @media (max-width: 640px) {
+        #stage { flex-direction: column; gap: 18px; text-align: center; }
+        .art, .art-icon, .reflection { width: 128px; }
+        .art { margin-bottom: -86px; }
+        .info h2 { font-size: 24px; }
+        .buttons { justify-content: center; }
+      }
+      /* Phones sideways: little height, so a smaller stage and dock, and no reflection. */
+      @media (max-height: 480px) {
+        :root { --dock-h: 88px; }
+        #stage { flex-direction: row; text-align: left; gap: 24px; padding-top: 10px; padding-bottom: 4px; }
+        .art, .art-icon { width: 104px; }
+        .art { margin-bottom: 0; }
+        .reflection { display: none !important; }
+        .info h2 { font-size: 22px; }
+        .meta { margin-bottom: 10px; }
+        .buttons { justify-content: flex-start; }
+        .text { margin-top: 8px; }
+        .icon { width: 52px; }
+        .hit { padding-bottom: 20px; }
+      }
+      /* Changing games (dashboard/main.ts select): the stage slides out toward the side away from the tapped icon
+         and the new one in from it; the bars stay live. */
+      #stage { view-transition-name: stage; }
+      .navbar { view-transition-name: navbar; }
+      .dock { view-transition-name: dock; }
+      :root { --dir: 1; }
+      :root[data-dir="back"] { --dir: -1; }
+      ::view-transition { pointer-events: none; } /* taps go through to the dock during the slide */
+      ::view-transition-old(root), ::view-transition-old(navbar), ::view-transition-old(dock) { display: none; }
+      ::view-transition-new(root), ::view-transition-new(navbar), ::view-transition-new(dock) { animation: none; }
+      ::view-transition-group(stage) { animation-duration: 0.4s; }
+      ::view-transition-old(stage) { animation: stage-out 0.15s ease-in both; }
+      ::view-transition-new(stage) { animation: stage-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s both; }
+      @keyframes stage-out { to { opacity: 0; transform: translateX(calc(var(--dir) * -48px)) scale(0.97); } }
+      @keyframes stage-in { from { opacity: 0; transform: translateX(calc(var(--dir) * 48px)) scale(0.97); } }
+
+      @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    </style>
+    <script type="module" crossorigin src="./assets/main-Mng_pmRc.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/store-5nzIPZ4Q.js">
+  </head>
+  <body>
+    <header class="navbar">
+      <button class="barbutton" id="add" aria-label="Add an installer"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+      <h1>Feather</h1>
+      <button class="barbutton" id="about-open">About</button>
+    </header>
+
+    <main id="stage" aria-live="polite">
+      <div class="art" id="stage-art">
+        <div class="art-icon"><span id="stage-initials"></span><img id="stage-icon" alt="" referrerpolicy="no-referrer" /></div>
+        <img class="reflection" id="stage-reflection" alt="" referrerpolicy="no-referrer" />
+      </div>
+      <div class="info">
+        <h2 id="stage-title"></h2>
+        <p class="meta" id="stage-meta"></p>
+        <div class="buttons">
+          <a class="glossy" id="action" href="#"></a>
+          <button class="glossy dark" id="options">Options</button>
+        </div>
+        <div class="progress" id="status" role="status" hidden>
+          <p class="work"><span id="work-title"></span> <span class="detail" id="work-detail"></span></p>
+          <progress id="bar" max="1"></progress>
+          <button class="glossy dark small" id="cancel">Cancel</button>
+        </div>
+        <p class="text" id="stage-text"></p>
+        <p class="text"><a id="alt" href="#"></a></p>
+        <p class="text small" id="ios-note" hidden>On iPhone and iPad, add Feather to the Home Screen (Share → Add to Home Screen) and play from there: it gets the whole screen, and Safari keeps the game data.</p>
+      </div>
+    </main>
+
+    <nav class="dock" aria-label="Games">
+      <ul id="games"></ul>
+    </nav>
+
+    <div id="drop" aria-hidden="true"><p>Drop the installer to unpack it</p></div>
+    <input id="file" type="file" accept=".exe,application/octet-stream,application/x-msdownload" hidden />
+
+    <dialog id="sheet" class="actionsheet" aria-labelledby="sheet-title">
+      <p class="sheet-title" id="sheet-title" tabindex="-1" autofocus></p>
+      <p class="sheet-note" id="saves-status"></p>
+      <button class="sheetbutton" id="export-saves">Export Saves</button>
+      <label class="sheetbutton" for="import-file">Import Saves</label>
+      <input id="import-file" type="file" accept=".json,application/json" hidden />
+      <button class="sheetbutton destructive" id="remove">Remove Game Data</button>
+      <button class="sheetbutton cancel" id="sheet-cancel">Cancel</button>
+    </dialog>
+
+    <dialog id="alert" class="alertview" aria-labelledby="alert-title">
+      <p class="alert-title" id="alert-title" tabindex="-1" autofocus></p>
+      <p class="alert-text" id="error-text" role="alert"></p>
+      <button class="alertbutton" id="dismiss">OK</button>
+    </dialog>
+
+    <dialog id="about" class="modal" aria-labelledby="about-title">
+      <header class="navbar">
+        <span></span>
+        <h1 id="about-title" tabindex="-1" autofocus>About</h1>
+        <button class="barbutton done" id="about-done">Done</button>
+      </header>
+      <div class="grouped">
+        <div class="about-head">
+          <img src="icons/feather.svg" alt="" width="72" height="72" />
+          <p class="about-name">Feather</p>
+          <p class="about-tag">The original PC Angry Birds games, in your browser.</p>
+        </div>
+        <p class="group-header">What It Is</p>
+        <div class="group">
+          <p>Feather plays the PC versions of the games: their own levels, physics and sound, on a computer, phone or tablet.</p>
+          <p>This site holds no game files. You bring the game's original installer and your browser unpacks it on this device.
+            Nothing is uploaded, and once a game is here it plays offline.</p>
+        </div>
+        <p class="group-header">Getting a Game</p>
+        <div class="group">
+          <p><strong>1.</strong> Tap the game in the dock, then <strong>Get</strong>: your browser downloads the installer from archive.org.</p>
+          <p><strong>2.</strong> Tap <strong>Choose File</strong> and pick the installer. It unpacks in a few seconds to a minute.</p>
+          <p><strong>3.</strong> Tap <strong>Play</strong>.</p>
+        </div>
+        <p class="group-header">iPhone and iPad</p>
+        <div class="group">
+          <p>Add Feather to your Home Screen and play from there: Share → Add to Home Screen (on iOS 26, tap ⋯ first). It runs full
+            screen, and Safari keeps its games.</p>
+          <p>The Home Screen app has its own storage, so get your games from inside it.</p>
+        </div>
+        <p class="group-header">Your Saves</p>
+        <div class="group">
+          <p>Saves stay on this device. Options → Export Saves keeps a copy; Import Saves brings it back, here or on another device.</p>
+          <p>Removing a game keeps its saves. Clearing this site's data in the browser removes both.</p>
+        </div>
+        <p class="group-header">Games</p>
+        <div class="group" id="about-games"></div>
+        <p class="group-footer">Each links to its installer's page on archive.org.</p>
+        <p class="group-footer">The PC versions' online activation is no longer in service, so the games run as full versions.</p>
+        <p class="group-footer">A fan project, not affiliated with or endorsed by Rovio. The games belong to their owners.</p>
+      </div>
+    </dialog>
+
+  </body>
+</html>
